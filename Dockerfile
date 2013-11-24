@@ -58,6 +58,9 @@ RUN gem install test-kitchen --pre
 RUN gem install unf
 RUN kitchen driver discover | awk '/kitchen-/ {print $1}' | xargs gem install
 
+# create a volume for ssh keys
+VOLUME /private
+
 # When the image is started add the remote server key, install the runner and run it
 WORKDIR /gitlab-ci-runner
 CMD ssh-keyscan -H $GITLAB_SERVER_FQDN >> /root/.ssh/known_hosts & bundle exec ./bin/setup_and_run
