@@ -55,7 +55,7 @@ RUN cd /gitlab-ci-runner && gem install bundler && bundle install
 
 # Install test-kitchen with all drivers:
 RUN gem install test-kitchen --pre
-RUN gem install kitchen-all
+RUN kitchen driver discover | awk '/kitchen-/ {print $1}' | xargs gem install
 
 # When the image is started add the remote server key, install the runner and run it
 WORKDIR /gitlab-ci-runner
