@@ -17,7 +17,7 @@ MAINTAINER  Bernhard Weisshuhn "bkw@codingforce.com"
 # After you start the runner you can send it to the background with ctrl-z
 # The new runner should show up in the GitLab CI interface on /runners
 #
-# You can tart an interactive session to test new commands with:
+# You can start an interactive session to test new commands with:
 # docker run -e CI_SERVER_URL=https://ci.example.com -e REGISTRATION_TOKEN=replaceme -e HOME=/root -i -t codingforce/gitlab-ci-runner-testkitchen:latest /bin/bash
 #
 # If you ever want to freshly rebuild the runner please use:
