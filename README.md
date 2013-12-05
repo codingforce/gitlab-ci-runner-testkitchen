@@ -7,7 +7,7 @@ Differences from the original:
 - no mysql
 - no postgres
 - no redis
-- testkitchen prerelease with all drivers
+- testkitchen 1.1.0 release with all drivers
 
 Run like this:
 
