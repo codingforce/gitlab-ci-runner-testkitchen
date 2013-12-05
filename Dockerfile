@@ -55,7 +55,7 @@ RUN git clone https://github.com/gitlabhq/gitlab-ci-runner.git /gitlab-ci-runner
 RUN cd /gitlab-ci-runner && gem install bundler && bundle install
 
 # Install test-kitchen with all drivers:
-RUN gem install test-kitchen --pre
+RUN gem install test-kitchen
 RUN gem install unf
 RUN kitchen driver discover | awk '/kitchen-/ {print $1}' | xargs gem install
 
