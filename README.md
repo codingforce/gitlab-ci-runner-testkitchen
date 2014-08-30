@@ -7,7 +7,7 @@ Differences from the original:
 - no mysql
 - no postgres
 - no redis
-- testkitchen 1.1.0 release with all drivers
+- testkitchen 1.2.1 release with fog and openstack
 
 Run like this:
 
@@ -15,6 +15,7 @@ Run like this:
         -e CI_SERVER_URL=https://ci.example.com \
         -e REGISTRATION_TOKEN=replaceme \
         -e HOME=/root \
+        -e USER=/root \
         -e GITLAB_SERVER_FQDN=gitlab.example.com \
         codingforce/gitlab-ci-runner-testkitchen
 
