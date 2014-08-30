@@ -1,6 +1,6 @@
 # gitlab-ci-runner-testkitchen
 
-FROM ubuntu:12.04
+FROM ubuntu:12.04.5
 MAINTAINER  Bernhard Weisshuhn "bkw@codingforce.com"
 
 # Based on https://github.com/gitlabhq/gitlab-ci-runner/blob/master/Dockerfile
@@ -23,9 +23,12 @@ MAINTAINER  Bernhard Weisshuhn "bkw@codingforce.com"
 # If you ever want to freshly rebuild the runner please use:
 # docker build -no-cache -t codingforce/gitlab-ci-runner-testkitchen github.com/codingforce/gitlab-ci-runner-testkitchen
 
+# Get rid of the debconf messages
+ENV DEBIAN_FRONTEND noninteractive
+
 # Update your packages and install the ones that are needed to compile Ruby
 RUN apt-get update -y
-RUN apt-get install -y wget curl gcc libxml2-dev libxslt-dev libcurl4-openssl-dev libreadline6-dev libc6-dev libssl-dev make build-essential zlib1g-dev openssh-server git-core libyaml-dev postfix libicu-dev
+RUN apt-get install -y wget curl gcc libxml2-dev libxslt-dev libcurl4-openssl-dev libreadline6-dev libc6-dev libssl-dev make build-essential zlib1g-dev openssh-server git-core libyaml-dev postfix libicu-dev libgecode-dev
 
 # Download Ruby and compile it
 RUN mkdir /tmp/ruby && cd /tmp/ruby && curl -s http://ftp.ruby-lang.org/pub/ruby/ruby-1.9-stable.tar.bz2 | tar xj --strip-components=1
@@ -36,8 +39,15 @@ RUN rm -rf /tmp/ruby
 RUN echo "gem: --no-rdoc --no-ri" >> /usr/local/etc/gemrc
 
 # Fix upstart under a virtual host https://github.com/dotcloud/docker/issues/1024
-RUN dpkg-divert --local --rename --add /sbin/initctl
-RUN ln -s /bin/true /sbin/initctl
+# RUN dpkg-divert --local --rename --add /sbin/initctl
+# RUN ln -s /bin/true /sbin/initctl
+
+# use unstalled gecode lib, otherwise dep_selector wont install
+ENV USE_SYSTEM_GECODE 1
+
+RUN gem install bundler
+RUN gem install yajl-ruby
+RUN gem install dep_selector
 
 # Set the right locale
 RUN echo "LC_ALL=\"en_US.UTF-8\"" >> /etc/default/locale
@@ -49,20 +59,24 @@ RUN mkdir -p /root/.ssh
 RUN touch /root/.ssh/known_hosts
 
 # Install the runner
-RUN mkdir /gitlab-ci-runner && cd /gitlab-ci-runner && curl -sL https://github.com/gitlabhq/gitlab-ci-runner/archive/v4.0.0.tar.gz | tar xz --strip-components=1
-
+RUN curl --silent -L https://gitlab.com/gitlab-org/gitlab-ci-runner/repository/archive.tar.gz | tar xz
 # Install the gems for the runner
-RUN cd /gitlab-ci-runner && gem install bundler && bundle install
+RUN cd gitlab-ci-runner.git && bundle install --deployment
+
+WORKDIR /gitlab-ci-runner.git
+
 
 # Install test-kitchen with all drivers:
 RUN gem install test-kitchen
 RUN gem install unf
-RUN kitchen driver discover | awk '/kitchen-/ {print $1}' | xargs gem install
+# RUN kitchen driver discover | awk '/kitchen-/ {print $1}' | grep -v vagrant | xargs gem install
+RUN gem install kitchen-openstack
+RUN gem install fog
+RUN gem install chefspec
 
 # create a volume for ssh keys
 VOLUME /private
 
 # When the image is started add the remote server key, install the runner and run it
-WORKDIR /gitlab-ci-runner
 CMD ssh-keyscan -H $GITLAB_SERVER_FQDN >> /root/.ssh/known_hosts & bundle exec ./bin/setup_and_run
 
